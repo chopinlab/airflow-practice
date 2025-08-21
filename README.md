@@ -4,7 +4,7 @@
 - 파이썬: 3.12(airflow가 3.12를 지원)
 
 
-# 설치
+# 로컬 설치
 
 ## 기초 세팅
 
@@ -24,3 +24,19 @@ uv sync
 ```
 
 ## vscode extension 설치
+airflow - necati arslan
+
+
+
+# 커스텀 이미지 생성
+```dockerfile
+
+
+
+
+
+
+
+```
+
+

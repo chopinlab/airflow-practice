@@ -1,0 +1,80 @@
+services:
+  postgres:
+    container_name: postgres
+    image: postgres:17.6-alpine3.21
+    user: postgres
+    environment:
+      POSTGRES_USER: airflow
+      POSTGRES_PASSWORD: airflow
+      POSTGRES_DB: airflow
+    #   POSTGRES_MULTIPLE_DATABASES: mlflow
+    volumes:
+      - postgres-db-volume:/var/lib/postgresql/data
+    #   - ./scripts/init-db.sh:/docker-entrypoint-initdb.d/init-db.sh
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "airflow"]
+      interval: 10s
+      retries: 5
+      start_period: 5s
+    restart: unless-stopped
+    networks:
+      - mlops-network
+
+
+  airflow:
+    container_name: airflow
+    # image: airflow-robos:v0.0.1-dev
+    build:
+      context: .
+      dockerfile: Dockerfile.airflow
+    command: >
+      bash -c "
+        airflow db migrate &&
+        airflow standalone
+      "
+    environment:
+      - AIRFLOW__DATABASE__SQL_ALCHEMY_CONN=postgresql+psycopg2://airflow:airflow@postgres/airflow
+      - AIRFLOW__CORE__LOAD_EXAMPLES=false
+    #   - AIRFLOW__CORE__DAGS_ARE_PAUSED_AT_CREATION=true
+    #   - AIRFLOW__CORE__FERNET_KEY=ZmDfcTF7_60GrrY167zsiPd67pEvs0aGOv2oasOM1Pg=
+    #   - _PIP_ADDITIONAL_REQUIREMENTS=mlflow>=2.8.0 requests>=2.28.0 apache-airflow-providers-docker>=3.7.0 docker>=6.0.0
+    #   - AIRFLOW__CORE__SIMPLE_AUTH_MANAGER_USERS=admin:admin,mlops:user,viewer:viewer
+    #   - AIRFLOW__CORE__SIMPLE_AUTH_MANAGER_ALL_ADMINS=True
+    #   - MLFLOW_TRACKING_URI=http://mlflow-server:5000
+    #   - AIRFLOW_CONN_MLFLOW_DEFAULT=http://mlflow-server:5000
+    #   - AIRFLOW_CONN_POSTGRES_DEFAULT=postgres://airflow:airflow@postgres:5432/airflow
+    # volumes:
+    #   - ./dags:/opt/airflow/dags
+    #   - ./logs:/opt/airflow/logs
+    #   - ./plugins:/opt/airflow/plugins
+    #   - ./models:/opt/airflow/models
+    #   - ./data:/opt/airflow/data
+    #   - ./notebooks:/opt/airflow/notebooks
+    #   - ./configs:/opt/airflow/config
+    #   - ./artifacts:/opt/airflow/artifacts
+    #   - ./scripts:/opt/airflow/scripts
+    #   - ./sql:/opt/airflow/sql
+    #   - ./mlflow-projects:/opt/airflow/mlflow-projects
+    #   - ./pyproject.toml:/tmp/pyproject.toml
+    #   - /var/run/docker.sock:/var/run/docker.sock
+    ports:
+      - "8080:8080"
+    healthcheck:
+      test: ["CMD-SHELL", "airflow jobs check --job-type SchedulerJob --hostname \"$${HOSTNAME}\""]
+      interval: 30s
+      timeout: 30s
+      retries: 3
+      start_period: 60s
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - mlops-network
+
+volumes:
+  postgres-db-volume:
+
+networks:
+  mlops-network:
+    driver: bridge
