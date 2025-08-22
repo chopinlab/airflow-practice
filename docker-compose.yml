@@ -33,23 +33,23 @@ services:
         airflow users create --username robos --password robos --firstname Admin --lastname User --role Admin --email admin@example.com &&
         airflow scheduler &
         airflow triggerer &
-        airflow api-server 
+        airflow api-server --port 8080 &
+        airflow dag-processor
       "
     environment:
       - AIRFLOW__DATABASE__SQL_ALCHEMY_CONN=postgresql+psycopg2://airflow:airflow@postgres/airflow
+
       - AIRFLOW__WEBSERVER__EXPOSE_CONFIG=True
+
       - AIRFLOW__CORE__LOAD_EXAMPLES=false
       - AIRFLOW__CORE__EXECUTOR=LocalExecutor
       - AIRFLOW__CORE__PARALLELISM=32
       - AIRFLOW__CORE__DAG_CONCURRENCY=16
       - AIRFLOW__CORE__AUTH_MANAGER=airflow.providers.fab.auth_manager.fab_auth_manager.FabAuthManager
-      - AIRFLOW__FAB__AUTH_TYPE=AUTH_DB
-      - AIRFLOW__FAB__AUTH_USER_REGISTRATION=True  # 자가 등록 허용
-      - AIRFLOW__FAB__AUTH_USER_REGISTRATION_ROLE=Viewer  # 기본 역할
-      - AIRFLOW__FAB__NAVBAR_COLOR=#000080  # 네이비 블루
-      - AIRFLOW__FAB__NAVBAR_TEXT_COLOR=#ffffff  # 흰색 텍스트
-      - AIRFLOW__FAB__NAVBAR_HOVER_COLOR=#4169E1  # 로열 블루
-      - AIRFLOW__FAB__NAVBAR_TEXT_HOVER_COLOR=#ffffff
+      
+      - AIRFLOW__FAB__NAVBAR_COLOR=#c9dafb  # 네이비 블루
+      
+      - AIRFLOW__SCHEDULER__DAG_DIR_LIST_INTERVAL=30  # 30초 (빠른 개발)
 
 
     #   - AIRFLOW__CORE__DAGS_ARE_PAUSED_AT_CREATION=true
@@ -60,8 +60,8 @@ services:
     #   - MLFLOW_TRACKING_URI=http://mlflow-server:5000
     #   - AIRFLOW_CONN_MLFLOW_DEFAULT=http://mlflow-server:5000
     #   - AIRFLOW_CONN_POSTGRES_DEFAULT=postgres://airflow:airflow@postgres:5432/airflow
-    # volumes:
-    #   - ./dags:/opt/airflow/dags
+    volumes:
+      - ./dags:/opt/airflow/dags
     #   - ./logs:/opt/airflow/logs
     #   - ./plugins:/opt/airflow/plugins
     #   - ./models:/opt/airflow/models
