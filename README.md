@@ -137,3 +137,51 @@ Apache Airflow 실습 프로젝트 (Python 3.13+). `uv`를 패키지 매니저�
 
 이 프로젝트는 Airflow 실험과 학습을 위한 초기 설정 단계입니다.
 
+# Airflow DAG 스케줄링
+
+## Schedule 파라미터 설정 방법
+
+### 1. timedelta 방식 (현재 사용 중)
+```python
+from datetime import timedelta
+
+schedule=timedelta(days=1)      # 매일
+schedule=timedelta(hours=6)     # 6시간마다  
+schedule=timedelta(minutes=30)  # 30분마다
+schedule=timedelta(weeks=1)     # 매주
+```
+
+### 2. Cron 표현식 (가장 유연함)
+```python
+schedule="0 2 * * *"        # 매일 오전 2시
+schedule="30 14 * * 1-5"    # 평일 오후 2:30
+schedule="0 9 1 * *"        # 매월 1일 오전 9시
+schedule="0 0 * * 0"        # 매주 일요일 자정
+```
+
+### 3. 사전 정의된 상수
+```python
+from airflow.timetables.trigger import CronTriggerTimetable
+
+schedule="@daily"       # 매일 자정
+schedule="@hourly"      # 매시간
+schedule="@weekly"      # 매주 일요일 자정  
+schedule="@monthly"     # 매월 1일 자정
+schedule="@yearly"      # 매년 1월 1일 자정
+schedule="@once"        # 한 번만 실행
+```
+
+### 4. 수동 실행만
+```python
+schedule=None           # 수동 트리거만
+```
+
+### 5. Dataset 기반 스케줄링 (최신 기능)
+```python
+from airflow import Dataset
+
+schedule=[Dataset("s3://bucket/data")]  # 데이터셋 업데이트 시 실행
+```
+
+**추천:** 정확한 시간이 중요하면 cron, 간격이 중요하면 timedelta를 사용하세요.
+
