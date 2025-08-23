@@ -8,7 +8,6 @@ dependencies = [
     "apache-airflow~=3.0.0", # 3.0.x 시리즈만 허용
     "apache-airflow-providers-postgres>=6.2.3",
     "requests>=2.32.5",
-    "astro-sdk-python[postgres]>=1.7.2",
 ]
 
 [dependency-groups]

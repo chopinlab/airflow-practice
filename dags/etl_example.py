@@ -79,9 +79,21 @@ import os
 import pendulum
 import requests
 
-from airflow.sdk import dag, task
+from airflow.sdk import dag, task, Asset
 from airflow.providers.postgres.hooks.postgres import PostgresHook
-# from airflow.providers.postgres.hooks.postgres
+
+# Asset 정의
+employee_data_asset = Asset(
+    uri="postgres://tutorial_pg_conn/employees",
+    name="employee_data",
+    extra={"table": "employees", "owner": "eric.cho@robos.one"}
+)
+
+csv_data_asset = Asset(
+    uri="file:///opt/airflow/dags/files/employees.csv",
+    name="employee_csv",
+    extra={"format": "csv", "source": "github"}
+)
 
 @dag(
     dag_id="etl_example",
@@ -131,7 +143,7 @@ def etl_example_taskflow():
         """
         pg_hook.run(create_sql)
 
-    @task
+    @task(outlets=[csv_data_asset])
     def get_data():
         """
         외부 CSV 파일을 다운로드하고 스테이징 테이블에 적재합니다.
@@ -159,7 +171,7 @@ def etl_example_taskflow():
         # )
         print("데이터 적재 완료!")
 
-    @task
+    @task(inlets=[csv_data_asset], outlets=[employee_data_asset])
     def merge_data():
         """
         스테이징 테이블의 데이터를 정제하고 최종 테이블에 UPSERT합니다.
