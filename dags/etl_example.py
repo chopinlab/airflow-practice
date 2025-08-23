@@ -84,7 +84,7 @@ from airflow.providers.postgres.hooks.postgres import PostgresHook
 
 # Asset 정의
 employee_data_asset = Asset(
-    uri="postgres://tutorial_pg_conn/employees",
+    uri="postgres://tutorial_pg_conn/postgres/public/employees",
     name="employee_data",
     extra={"table": "employees", "owner": "eric.cho@robos.one"}
 )
@@ -97,7 +97,7 @@ csv_data_asset = Asset(
 
 @dag(
     dag_id="etl_example",
-    schedule="0 0 * * *",  # 매일 자정 실행
+    schedule="@daily",  # 매일 자정 실행
     start_date=pendulum.datetime(2021, 1, 1, tz="UTC"),
     catchup=False,
     dagrun_timeout=datetime.timedelta(minutes=60),

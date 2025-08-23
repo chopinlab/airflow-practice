@@ -69,7 +69,7 @@ def minio_asset_producer():
 # Producer DAG 2: 새로운 path 감지하여 asset 생성
 @dag(
     dag_id="minio_path_watcher",
-    schedule="*/5 * * * *",  # 5분마다 체크
+    schedule=datetime.timedelta(minutes=5),  # 5분마다 체크
     start_date=pendulum.datetime(2021, 1, 1, tz="UTC"),
     catchup=False,
     tags=["minio", "path", "watcher"],
