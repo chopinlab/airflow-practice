@@ -64,7 +64,7 @@ model_asset = Asset(
 
 @dag(
     dag_id="mlops_training_pipeline",
-    schedule="@manual",  # 수동 실행 (파라미터 전달용)
+    schedule=None,  # 수동 실행 (파라미터 전달용)
     start_date=pendulum.datetime(2021, 1, 1, tz="UTC"),
     catchup=False,
     tags=["mlops", "mlflow", "minio", "machine-learning"],
