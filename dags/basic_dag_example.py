@@ -17,7 +17,6 @@
 print_date → sleep (순차 실행)
 """
 
-
 import json
 import pendulum
 import textwrap
@@ -26,44 +25,40 @@ from airflow.sdk import dag, task
 from airflow.providers.standard.operators.bash import BashOperator
 from airflow.providers.standard.operators.python import PythonOperator
 
+
 @dag(
     schedule=None,
     start_date=pendulum.datetime(2025, 8, 22, tz="UTC"),
     catchup=False,
     tags=["example", "basic", "days"],
-
     default_args={
         "owner": "eric.cho@robos.one",
-        "depends_on_past": False,    # 과거 실행은 무시함
+        "depends_on_past": False,  # 과거 실행은 무시함
         "retries": 1,
         "retry_delay": timedelta(minutes=5),
         "email_on_failure": False,
         "email_on_retry": False,
-
     },
     description="tutorial_basic_operators",
     doc_md=__doc__,
 )
 def basic_dag_example():
-    
+
     @task.bash
     def print_date():
-      """
-      #### print_date 태스크
-      현재 시스템 날짜와 시간을 출력합니다.
-      
-      **사용 명령어**: `date`
-      """
-      return "date"
+        """
+        - print_date 태스크
+        현재 시스템 날짜와 시간을 출력합니다.
 
+        - 사용 명령어: `date`
+        """
+        return "date"
 
     @task()
     def extract():
         """
-        #### Extract task
-        A simple Extract task to get data ready for the rest of the data
-        pipeline. In this case, getting data is simulated by reading from a
-        hardcoded JSON string.
+        - Extract task
+        A simple Extract task to get data ready for the rest of the data pipeline. In this case, getting data is simulated by reading from a hardcoded JSON string.
         """
         data_string = '{"1001": 301.27, "1002": 433.21, "1003": 502.22}'
 
@@ -73,9 +68,8 @@ def basic_dag_example():
     @task(multiple_outputs=True)
     def transform(order_data_dict: dict):
         """
-        #### Transform task
-        A simple Transform task which takes in the collection of order data and
-        computes the total order value.
+        - Transform task
+        A simple Transform task which takes in the collection of order data and computes the total order value.
         """
         total_order_value = 0
 
@@ -83,13 +77,12 @@ def basic_dag_example():
             total_order_value += value
 
         return {"total_order_value": total_order_value}
-    
+
     @task()
     def load(total_order_value: float):
         """
-        #### Load task
-        A simple Load task which takes in the result of the Transform task and
-        instead of saving it to end user review, just prints it out.
+        - Load task
+        A simple Load task which takes in the result of the Transform task and instead of saving it to end user review, just prints it out.
         """
 
         print(f"Total order value is: {total_order_value:.2f}")
@@ -99,9 +92,8 @@ def basic_dag_example():
     order_summary = transform(order_data)
     load(order_summary["total_order_value"])
 
+
 basic_dag_example()
-
-
 
 
 # with DAG(
@@ -137,7 +129,7 @@ basic_dag_example()
 #     catchup=False,
 #     tags=["example", "basic", "days"]
 # ) as dag:
-    
+
 #     dag.doc_md = __doc__
 
 #     # t1, t2 and t3 are examples of tasks created by instantiating operators
@@ -151,11 +143,11 @@ basic_dag_example()
 #     """\
 #     #### print_date 태스크
 #     현재 시스템 날짜와 시간을 출력합니다.
-    
+
 #     **사용 명령어**: `date`
 #     """
 #     )
-    
+
 
 #     t2 = BashOperator(
 #         task_id="sleep",
@@ -163,11 +155,11 @@ basic_dag_example()
 #         bash_command="sleep 5",
 #         retries=3,
 #     )
-    
+
 #     t2.doc_md = """
 #     ### sleep 태스크
 #     5초간 대기하는 태스크입니다.
-    
+
 #     - **대기 시간**: 5초
 #     - **재시도**: 3회
 #     - **용도**: 시간 지연 테스트
@@ -189,4 +181,3 @@ basic_dag_example()
 #     )
 
 #     t1 >> [t2, t3]
-
